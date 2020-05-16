@@ -11,14 +11,11 @@ class App extends Routes {
   constructor(options?: ServerOptions) {
     super();
     this.port = options?.port || 8000;
-  }
-
-  start() {
-    this.server = serve({ port: this.port });
     this.listen();
   }
-
+  
   async listen() {
+    this.server = serve({ port: this.port });
     console.log(`server running in port ${this.port}`);
 
     for await (const req of this.server) {
