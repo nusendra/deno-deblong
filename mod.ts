@@ -1,14 +1,7 @@
 import { serve } from "https://deno.land/std/http/server.ts";
-
-type ServerOptions = {
-  port: number;
-};
-
-type RouterType = {
-  method: string,
-  path: string,
-  handler: any
-};
+import { ServerOptions, RouterType } from "./types.ts";
+import Handler from "./handler.ts";
+import { Response } from "./contracts.ts";
 
 class App {
   private port: number = 8000;
@@ -21,16 +14,26 @@ class App {
   }
 
   get(path: string, handler: any) {
+    // find the existing route
+    const route = this.router.findIndex((route) => {
+      return route.path == path;
+    });
+
+    if (route >= 0) {
+      this.router[route].handler = handler;
+      return this;
+    }
+
     this.router.push({
       method: "GET",
       path,
-      handler
+      handler,
     });
     return this;
   }
 
   start() {
-    this.server = serve({ port: this.port});
+    this.server = serve({ port: this.port });
     this.listen();
   }
 
@@ -38,21 +41,20 @@ class App {
     console.log(`server running in port ${this.port}`);
 
     for await (const req of this.server) {
-      const availableRouter = this.router.find(route => {
-        return route.path == req.url && route.method == req.method
+      const availableRouter = this.router.find((route) => {
+        return route.path == req.url && route.method == req.method;
       });
-      
+
       if (!availableRouter) {
         req.respond({ status: 404 });
       }
-      
-      req.respond({ status: 200, body: availableRouter?.handler() });
+
+      req.respond({
+        status: 200,
+        body: availableRouter?.handler(new Handler()),
+      });
     }
   }
 }
 
-const app = new App();
-app.start();
-app.get('/test', () => {
-  return 'this is a callback';
-});
+export { App, Response };
