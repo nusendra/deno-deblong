@@ -7,3 +7,6 @@ export type RouterType = {
   path: string;
   handler: any;
 };
+
+export type sendType = string;
+export type jsonType = string | object;

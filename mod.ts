@@ -1,35 +1,16 @@
 import { serve } from "https://deno.land/std/http/server.ts";
-import { ServerOptions, RouterType } from "./types.ts";
+import { ServerOptions } from "./types.ts";
 import Handler from "./handler.ts";
 import { Response } from "./contracts.ts";
+import Routes from "./routes.ts";
 
-class App {
+class App extends Routes {
   private port: number = 8000;
   private server: any;
-  private router: RouterType[];
 
   constructor(options?: ServerOptions) {
+    super();
     this.port = options?.port || 8000;
-    this.router = [];
-  }
-
-  get(path: string, handler: any) {
-    // find the existing route
-    const route = this.router.findIndex((route) => {
-      return route.path == path;
-    });
-
-    if (route >= 0) {
-      this.router[route].handler = handler;
-      return this;
-    }
-
-    this.router.push({
-      method: "GET",
-      path,
-      handler,
-    });
-    return this;
   }
 
   start() {
