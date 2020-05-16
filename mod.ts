@@ -6,7 +6,8 @@ type ServerOptions = {
 
 type RouterType = {
   method: string,
-  path: string
+  path: string,
+  handler: any
 };
 
 class App {
@@ -19,10 +20,11 @@ class App {
     this.router = [];
   }
 
-  get(path: string) {
+  get(path: string, handler: any) {
     this.router.push({
       method: "GET",
-      path
+      path,
+      handler
     });
     return this;
   }
@@ -33,20 +35,24 @@ class App {
   }
 
   async listen() {
+    console.log(`server running in port ${this.port}`);
+
     for await (const req of this.server) {
-      const availableRouter = this.router.some(route => {
+      const availableRouter = this.router.find(route => {
         return route.path == req.url && route.method == req.method
       });
       
       if (!availableRouter) {
-        req.respond({ status: 404, body: "route not found" });
+        req.respond({ status: 404 });
       }
       
-      req.respond({ status: 200, body: "hi world" });
+      req.respond({ status: 200, body: availableRouter?.handler() });
     }
   }
 }
 
 const app = new App();
 app.start();
-app.get('/test')
+app.get('/test', () => {
+  return 'this is a callback';
+});
